@@ -1,0 +1,14 @@
+{
+  "name": "smart-local-ai-pro",
+  "version": "1.0.0",
+  "description": "Pro Add-on for Smart Local AI — Extended PersonaFlow Behavioral Tracking",
+  "private": true,
+  "scripts": {
+    "build": "wp-scripts build",
+    "start": "wp-scripts start",
+    "lint:js": "wp-scripts lint-js src/"
+  },
+  "devDependencies": {
+    "@wordpress/scripts": "^30.0.0"
+  }
+}

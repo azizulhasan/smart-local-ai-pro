@@ -1,0 +1,4 @@
+node_modules/
+build/
+admin/css/atlas-ai-admin.css
+production/

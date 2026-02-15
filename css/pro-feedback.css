@@ -1,0 +1,269 @@
+/**
+ * Smart Local AI Pro — Feedback UI Styles.
+ *
+ * Multi-react buttons, star rating widget, exclusion management,
+ * and Pro badge indicators.
+ *
+ * @package Smart_Local_AI_Pro
+ */
+
+/* ── Multi-React Buttons ── */
+
+.atlas-ai-pf-reactions {
+	display: flex;
+	gap: 6px;
+	margin-top: 8px;
+	flex-wrap: wrap;
+}
+
+.atlas-ai-pf-react-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 4px 10px;
+	border: 1px solid #e2e8f0;
+	border-radius: 20px;
+	background: #fff;
+	font-size: 13px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	color: #64748b;
+}
+
+.atlas-ai-pf-react-btn:hover {
+	background: #f1f5f9;
+	border-color: #cbd5e1;
+	color: #334155;
+}
+
+.atlas-ai-pf-react-btn.active {
+	border-color: #6366f1;
+	background: #eef2ff;
+	color: #4f46e5;
+}
+
+.atlas-ai-pf-react-btn .react-emoji {
+	font-size: 16px;
+	line-height: 1;
+}
+
+.atlas-ai-pf-react-btn .react-count {
+	font-size: 11px;
+	color: #94a3b8;
+	min-width: 14px;
+	text-align: center;
+}
+
+/* ── Star Rating ── */
+
+.atlas-ai-pf-star-rating {
+	display: inline-flex;
+	gap: 2px;
+	margin-top: 8px;
+	direction: rtl; /* Right-to-left for hover effect */
+}
+
+.atlas-ai-pf-star-rating input {
+	display: none;
+}
+
+.atlas-ai-pf-star-rating label {
+	cursor: pointer;
+	font-size: 20px;
+	color: #d1d5db;
+	transition: color 0.15s ease;
+	line-height: 1;
+}
+
+.atlas-ai-pf-star-rating label:hover,
+.atlas-ai-pf-star-rating label:hover ~ label {
+	color: #f59e0b;
+}
+
+.atlas-ai-pf-star-rating input:checked ~ label {
+	color: #f59e0b;
+}
+
+/* ── Exclusion Controls ── */
+
+.atlas-ai-pf-exclusion-menu {
+	position: relative;
+	display: inline-block;
+}
+
+.atlas-ai-pf-exclusion-trigger {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	border: none;
+	background: transparent;
+	border-radius: 50%;
+	cursor: pointer;
+	color: #94a3b8;
+	font-size: 16px;
+	transition: all 0.2s ease;
+}
+
+.atlas-ai-pf-exclusion-trigger:hover {
+	background: #f1f5f9;
+	color: #64748b;
+}
+
+.atlas-ai-pf-exclusion-dropdown {
+	position: absolute;
+	top: 100%;
+	right: 0;
+	z-index: 10;
+	min-width: 180px;
+	background: #fff;
+	border: 1px solid #e2e8f0;
+	border-radius: 8px;
+	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+	padding: 4px 0;
+	display: none;
+}
+
+.atlas-ai-pf-exclusion-menu.open .atlas-ai-pf-exclusion-dropdown {
+	display: block;
+}
+
+.atlas-ai-pf-exclusion-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	width: 100%;
+	padding: 8px 12px;
+	border: none;
+	background: transparent;
+	cursor: pointer;
+	font-size: 13px;
+	color: #475569;
+	text-align: left;
+	transition: background 0.15s ease;
+}
+
+.atlas-ai-pf-exclusion-item:hover {
+	background: #f8fafc;
+}
+
+.atlas-ai-pf-exclusion-item.danger {
+	color: #dc2626;
+}
+
+.atlas-ai-pf-exclusion-item.danger:hover {
+	background: #fef2f2;
+}
+
+.atlas-ai-pf-exclusion-item .exclusion-icon {
+	font-size: 14px;
+	width: 18px;
+	text-align: center;
+	flex-shrink: 0;
+}
+
+/* ── Exclusion List (Admin/Profile) ── */
+
+.atlas-ai-pf-exclusion-list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.atlas-ai-pf-exclusion-entry {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 10px 12px;
+	border-bottom: 1px solid #f1f5f9;
+}
+
+.atlas-ai-pf-exclusion-entry:last-child {
+	border-bottom: none;
+}
+
+.atlas-ai-pf-exclusion-info {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.atlas-ai-pf-exclusion-type {
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	color: #94a3b8;
+	background: #f8fafc;
+	padding: 2px 6px;
+	border-radius: 4px;
+}
+
+.atlas-ai-pf-exclusion-target {
+	font-size: 13px;
+	color: #334155;
+}
+
+.atlas-ai-pf-exclusion-remove {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	border: 1px solid #e2e8f0;
+	border-radius: 4px;
+	background: #fff;
+	cursor: pointer;
+	color: #94a3b8;
+	font-size: 12px;
+	transition: all 0.15s ease;
+}
+
+.atlas-ai-pf-exclusion-remove:hover {
+	border-color: #fca5a5;
+	background: #fef2f2;
+	color: #dc2626;
+}
+
+/* ── Pro Badge ── */
+
+.atlas-ai-pf-pro-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 2px 8px;
+	background: linear-gradient(135deg, #6366f1, #8b5cf6);
+	color: #fff;
+	font-size: 10px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	border-radius: 10px;
+	line-height: 1.4;
+}
+
+.atlas-ai-pf-pro-badge::before {
+	content: '\2B50'; /* Star emoji */
+	font-size: 10px;
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 640px) {
+	.atlas-ai-pf-reactions {
+		gap: 4px;
+	}
+
+	.atlas-ai-pf-react-btn {
+		padding: 3px 8px;
+		font-size: 12px;
+	}
+
+	.atlas-ai-pf-star-rating label {
+		font-size: 24px;
+	}
+
+	.atlas-ai-pf-exclusion-dropdown {
+		min-width: 160px;
+	}
+}
