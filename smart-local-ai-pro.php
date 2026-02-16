@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Smart Local AI Pro
+ * Plugin Name: Smart Local AI Pro – Browser-Based Private AI Tools
  * Plugin URI:  https://atlasaidev.com/pro
  * Description: Pro add-on for Smart Local AI — adds 77 advanced behavioral signals, social tracking,
  *              negative signal detection, session analytics, and user exclusions to PersonaFlow.
@@ -9,7 +9,6 @@
  * Author URI:  https://atlasaidev.com
  * License:     GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain: smart-local-ai-pro
  * Requires at least: 6.0
  * Requires PHP: 7.4
  */
@@ -26,21 +25,6 @@ define( 'ATLAS_AI_PRO_FILE', __FILE__ );
 define( 'ATLAS_AI_PRO_PATH', plugin_dir_path( __FILE__ ) );
 define( 'ATLAS_AI_PRO_URL', plugin_dir_url( __FILE__ ) );
 define( 'ATLAS_AI_PRO_BASENAME', plugin_basename( __FILE__ ) );
-
-/**
- * Check that Smart Local AI (free) is active.
- */
-//if ( ! defined( 'ATLAS_AI_VERSION' ) ) {
-//	add_action(
-//		'admin_notices',
-//		function () {
-//			echo '<div class="notice notice-error"><p>';
-//			esc_html_e( 'Smart Local AI Pro requires Smart Local AI (free) to be active.', 'smart-local-ai-pro' );
-//			echo '</p></div>';
-//		}
-//	);
-//	return;
-//}
 
 /**
  * Include core files.
@@ -76,6 +60,19 @@ add_action( 'plugins_loaded', 'atlas_ai_pro_init', 20 );
  * Initialize Pro features if PersonaFlow is enabled.
  */
 function atlas_ai_pro_init() {
+	// Check that Smart Local AI (free) is active — by priority 20, it's fully loaded.
+	if ( ! defined( 'ATLAS_AI_VERSION' ) ) {
+		add_action(
+			'admin_notices',
+			function () {
+				echo '<div class="notice notice-error"><p>';
+				esc_html_e( 'Smart Local AI Pro requires Smart Local AI (free) to be active.', 'smart-local-ai-pro' );
+				echo '</p></div>';
+			}
+		);
+		return;
+	}
+
 	$plugin = Smart_Local_AI::get_instance();
 	$pf     = $plugin->get_module( 'personaflow' );
 

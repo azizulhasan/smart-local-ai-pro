@@ -18,8 +18,17 @@
 		return; // Free tracker not loaded.
 	}
 
-	var push   = tracker.pushEvent;
-	var postId = ( window.atlasAIPersonaFlow && window.atlasAIPersonaFlow.postId ) || 0;
+	var originalPush = tracker.pushEvent;
+	var postId       = ( window.atlasAIPersonaFlow && window.atlasAIPersonaFlow.postId ) || 0;
+	var disabledSignals = ( window.atlasAIPersonaFlow && window.atlasAIPersonaFlow.disabledSignals ) || [];
+
+	// Wrap pushEvent to also check disabled signals for Pro signals.
+	function push( type, pId, value, weight, meta ) {
+		if ( disabledSignals.length && disabledSignals.indexOf( type ) !== -1 ) {
+			return;
+		}
+		originalPush( type, pId, value, weight, meta );
+	}
 
 	// ── Social Signal Tracking ──
 	if ( config.enableSocial ) {

@@ -85,6 +85,13 @@ class AtlasAI_Pro_Loader {
 		// Pro REST endpoints.
 		add_action( 'rest_api_init', array( $rest, 'register_routes' ) );
 
+		// Pro Analytics REST endpoints.
+		add_action( 'rest_api_init', function () {
+			require_once ATLAS_AI_PRO_PATH . 'includes/class-atlas-ai-pro-analytics.php';
+			$pro_analytics = new AtlasAI_Pro_Analytics();
+			$pro_analytics->register_routes();
+		} );
+
 		// Pro frontend scripts (priority 20 = after free tracker at 10).
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_pro_scripts' ), 20 );
 
