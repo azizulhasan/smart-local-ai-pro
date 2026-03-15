@@ -18,7 +18,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 class AtlasAI_Pro_Loader {
 
 	/**
-	 * Initialize all Pro hooks.
+	 * Register hooks that work regardless of which modules are enabled.
+	 *
+	 * Called early from smart-local-ai-pro.php before PersonaFlow checks.
+	 */
+	public static function register_global_hooks() {
+		// Bulk Alt Text (Pro).
+		add_action( 'atlas_ai_render_bulk_alttext', array( __CLASS__, 'render_bulk_alttext' ) );
+		add_action( 'atlas_ai_enqueue_bulk_alttext', array( __CLASS__, 'enqueue_bulk_alttext' ) );
+	}
+
+	/**
+	 * Initialize PersonaFlow Pro hooks.
 	 *
 	 * Called from smart-local-ai-pro.php after confirming:
 	 * 1. Free plugin is active
@@ -132,6 +143,70 @@ class AtlasAI_Pro_Loader {
 		) {$charset_collate};";
 
 		return $tables;
+	}
+
+	/**
+	 * Render the Pro bulk alt text scan page.
+	 *
+	 * Hooked to 'atlas_ai_render_bulk_alttext' from the free plugin.
+	 */
+	public static function render_bulk_alttext() {
+		echo '<div class="wrap"><div id="atlas-ai-altgenius-bulk" class="atlas-ai-admin"></div></div>';
+	}
+
+	/**
+	 * Enqueue scripts for the Pro bulk alt text scan page.
+	 *
+	 * Hooked to 'atlas_ai_enqueue_bulk_alttext' from the free plugin.
+	 *
+	 * @param string $hook_suffix Current admin page hook suffix.
+	 */
+	public static function enqueue_bulk_alttext( $hook_suffix ) {
+		$asset_file = ATLAS_AI_PATH . 'build/modules/altgenius/bulk-scan.asset.php';
+		$asset      = file_exists( $asset_file )
+			? require $asset_file
+			: array(
+				'dependencies' => array( 'wp-element', 'wp-components', 'wp-api-fetch', 'wp-i18n' ),
+				'version'      => ATLAS_AI_VERSION,
+			);
+
+		wp_enqueue_script(
+			'atlas-ai-altgenius-bulk',
+			ATLAS_AI_URL . 'build/modules/altgenius/bulk-scan.js',
+			$asset['dependencies'],
+			$asset['version'],
+			true
+		);
+
+		$plugin   = Smart_Local_AI::get_instance();
+		$altgenius = $plugin->get_module( 'altgenius' );
+		$settings  = $altgenius ? $altgenius->get_settings() : array();
+		$hf_token  = isset( $settings['hf_token'] ) ? $settings['hf_token'] : '';
+		unset( $settings['hf_token'] );
+
+		wp_localize_script(
+			'atlas-ai-altgenius-bulk',
+			'atlasAIAltGenius',
+			array(
+				'restUrl'   => rest_url( AtlasAI_REST_API::NAMESPACE . '/altgenius' ),
+				'nonce'     => wp_create_nonce( 'wp_rest' ),
+				'settings'  => $settings,
+				'workerUrl' => ATLAS_AI_URL . 'build/modules/altgenius/worker.js?ver=' . ATLAS_AI_VERSION,
+				'pluginUrl' => ATLAS_AI_URL,
+				'hfToken'   => $hf_token,
+			)
+		);
+
+		// Admin Tailwind CSS.
+		$css_file = ATLAS_AI_PATH . 'admin/css/atlas-ai-admin.css';
+		if ( file_exists( $css_file ) ) {
+			wp_enqueue_style(
+				'atlas-ai-admin',
+				ATLAS_AI_URL . 'admin/css/atlas-ai-admin.css',
+				array( 'wp-components' ),
+				ATLAS_AI_VERSION
+			);
+		}
 	}
 
 	/**
