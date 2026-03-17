@@ -99,8 +99,8 @@ class AtlasAI_Pro_Lib_AtlasAiDev {
 			'https://gist.githubusercontent.com/azizulhasan/afcc74f398b290e586f3a4578341b699/raw/smart-local-ai-pro.json'
 		);
 
-		// Initialize updater and promotions — skip telemetry until data scope is decided.
-		// $this->insightInit();
+		// Initialize updater, promotions, and telemetry (includes Freemius deactivation bridge).
+		$this->insightInit();
 		$this->updater->init();
 		$this->promotion->init();
 	}
@@ -114,21 +114,6 @@ class AtlasAI_Pro_Lib_AtlasAiDev {
 		$project_slug = $this->client->getSlug();
 
 		add_filter( $project_slug . '_what_tracked', array( $this, 'data_we_collect' ), 10, 1 );
-
-		// Support ticket configuration.
-		$this->insights->add_extra_header(
-			sprintf(
-				'<a class="button button-secondary" style="margin-left:5px" href="%s" target="_blank">%s</a>',
-				'https://atlasaidev.com/support/',
-				esc_html__( 'Get Support', 'smart-local-ai' )
-			)
-		);
-
-		$this->insights->set_support_ticket_from_address( get_option( 'admin_email' ) );
-		$this->insights->set_support_ticket_to_address( 'contact.atlasaidev@gmail.com' );
-		$this->insights->set_support_ticket_template(
-			esc_html__( "Hello,\n\nI am using Smart Local AI Pro version %plugin_version% on my WordPress site (%site_url%).\n\n[Describe your issue here]\n\nThank you.", 'smart-local-ai' )
-		);
 
 		// Freemius deactivation data bridge.
 		add_filter(

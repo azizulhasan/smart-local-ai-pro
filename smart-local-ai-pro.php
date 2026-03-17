@@ -49,49 +49,49 @@ register_deactivation_hook( __FILE__, array( 'AtlasAI_Pro_Deactivator', 'deactiv
  * Uses the same product ID and slug as the free plugin — this is how
  * Freemius links the Pro add-on to the free parent plugin.
  */
-//if ( is_admin() && ! function_exists( 'atlas_ai_fs' ) ) {
-//	/**
-//	 * Create a helper function for easy SDK access.
-//	 *
-//	 * @return Freemius
-//	 */
-//	function atlas_ai_fs() {
-//		global $atlas_ai_fs;
-//
-//		if ( ! isset( $atlas_ai_fs ) ) {
-//			// Include Freemius SDK.
-//			require_once dirname( __FILE__ ) . '/vendor/freemius/start.php';
-//
-//			$atlas_ai_fs = fs_dynamic_init(
-//				array(
-//					'id'               => '25926',
-//					'slug'             => 'smart-local-ai',
-//					'type'             => 'plugin',
-//					'public_key'       => 'pk_fb3274faf50553dfad1d3ea34dc28',
-//					'is_premium'       => true,
-//					'is_premium_only'  => true,
-//					'has_addons'       => false,
-//					'has_paid_plans'   => true,
-//					'has_affiliation'  => 'all',
-//					'menu'             => array(
-//						'slug'    => 'smart-local-ai',
-//						'support' => false,
-//						'contact' => true,
-//						'account' => true,
-//						'pricing' => false,
-//					),
-//				)
-//			);
-//		}
-//
-//		return $atlas_ai_fs;
-//	}
-//
-//	// Init Freemius.
-//	atlas_ai_fs();
-//	// Signal that SDK was initiated.
-//	do_action( 'atlas_ai_fs_loaded' );
-//}
+if ( ! function_exists( 'atlas_ai_fs' ) ) {
+	/**
+	 * Create a helper function for easy SDK access.
+	 *
+	 * @return Freemius
+	 */
+	function atlas_ai_fs() {
+		global $atlas_ai_fs;
+
+		if ( ! isset( $atlas_ai_fs ) ) {
+			// Include Freemius SDK.
+			require_once dirname( __FILE__ ) . '/vendor/freemius/start.php';
+
+			$atlas_ai_fs = fs_dynamic_init(
+				array(
+					'id'               => '25926',
+					'slug'             => 'smart-local-ai',
+					'type'             => 'plugin',
+					'public_key'       => 'pk_fb3274faf50553dfad1d3ea34dc28',
+					'is_premium'       => true,
+					'is_premium_only'  => true,
+					'has_addons'       => false,
+					'has_paid_plans'   => true,
+					'has_affiliation'  => false,
+					'menu'             => array(
+						'slug'    => 'smart-local-ai',
+						'support' => false,
+						'contact' => true,
+						'account' => true,
+						'pricing' => false,
+					),
+				)
+			);
+		}
+
+		return $atlas_ai_fs;
+	}
+
+	// Init Freemius.
+	atlas_ai_fs();
+	// Signal that SDK was initiated.
+	do_action( 'atlas_ai_fs_loaded' );
+}
 
 /**
  * Customize Freemius opt-in message.
@@ -152,6 +152,26 @@ function atlas_ai_pro_init() {
 			function () {
 				echo '<div class="notice notice-error"><p>';
 				esc_html_e( 'Smart Local AI Pro requires Smart Local AI (free) to be active.', 'smart-local-ai-pro' );
+				echo '</p></div>';
+			}
+		);
+		return;
+	}
+
+	// If Freemius is active but no valid license, disable all Pro features.
+	if ( function_exists( 'atlas_ai_fs' ) && ! atlas_ai_fs()->can_use_premium_code() ) {
+		add_action(
+			'admin_notices',
+			function () {
+				echo '<div class="notice notice-warning"><p>';
+				esc_html_e( 'Smart Local AI Pro requires an active license to enable Pro features.', 'smart-local-ai-pro' );
+				if ( function_exists( 'atlas_ai_fs' ) ) {
+					printf(
+						' <a href="%s">%s</a>',
+						esc_url( atlas_ai_fs()->get_account_url() ),
+						esc_html__( 'Activate License', 'smart-local-ai-pro' )
+					);
+				}
 				echo '</p></div>';
 			}
 		);
