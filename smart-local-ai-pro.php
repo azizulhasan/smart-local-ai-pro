@@ -4,7 +4,7 @@
  * Plugin URI:  https://atlasaidev.com/pro
  * Description: Pro add-on for Smart Local AI — adds 77 advanced behavioral signals, social tracking,
  *              negative signal detection, session analytics, and user exclusions to PersonaFlow.
- * Version:     1.0.0
+ * Version:     2.0.0
  * Author:      AtlasAI Dev
  * Author URI:  https://atlasaidev.com
  * License:     GPL-2.0-or-later
@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Plugin constants.
  */
-define( 'ATLAS_AI_PRO_VERSION', '1.0.0' );
+define( 'ATLAS_AI_PRO_VERSION', '2.0.0' );
 define( 'ATLAS_AI_PRO_FILE', __FILE__ );
 define( 'ATLAS_AI_PRO_PATH', plugin_dir_path( __FILE__ ) );
 define( 'ATLAS_AI_PRO_URL', plugin_dir_url( __FILE__ ) );
