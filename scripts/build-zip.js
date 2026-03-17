@@ -17,11 +17,13 @@
 const fs = require( 'fs' );
 const path = require( 'path' );
 const { execSync } = require( 'child_process' );
+const archiver = require( 'archiver' );
 
 const ROOT = path.resolve( __dirname, '..' );
 const PLUGIN_SLUG = 'smart-local-ai-pro';
 const PRODUCTION_DIR = path.join( ROOT, 'production' );
-const STAGING_DIR = path.join( PRODUCTION_DIR, PLUGIN_SLUG );
+const STAGING_BASE = path.join( PRODUCTION_DIR, '_staging' );
+const STAGING_DIR = path.join( STAGING_BASE, PLUGIN_SLUG );
 const ZIP_FILE = path.join( PRODUCTION_DIR, `${ PLUGIN_SLUG }.zip` );
 
 /**
@@ -30,7 +32,6 @@ const ZIP_FILE = path.join( PRODUCTION_DIR, `${ PLUGIN_SLUG }.zip` );
  */
 const INCLUDE = [
 	'smart-local-ai-pro.php',
-	'uninstall.php',
 	'readme.txt',
 	'index.php',
 	'build/',
@@ -51,13 +52,6 @@ const EXCLUDE = [
 	'node_modules/',
 	'.git/',
 ];
-
-function cleanDir( dir ) {
-	if ( fs.existsSync( dir ) ) {
-		fs.rmSync( dir, { recursive: true, force: true } );
-	}
-	fs.mkdirSync( dir, { recursive: true } );
-}
 
 function shouldExclude( relativePath ) {
 	return EXCLUDE.some( ( pattern ) => relativePath.includes( pattern ) );
@@ -101,75 +95,86 @@ function copyRecursive( src, dest ) {
 	}
 }
 
+function createZip( sourceDir, destFile, prefix ) {
+	return new Promise( ( resolve, reject ) => {
+		const output = fs.createWriteStream( destFile );
+		const archive = archiver( 'zip', { zlib: { level: 9 } } );
+
+		output.on( 'close', () => resolve( archive.pointer() ) );
+		archive.on( 'error', ( err ) => reject( err ) );
+
+		archive.pipe( output );
+		archive.directory( sourceDir, prefix );
+		archive.finalize();
+	} );
+}
+
 // ---- Main ----
 
-console.log( `Building ${ PLUGIN_SLUG } production zip...\n` );
+async function main() {
+	console.log( `Building ${ PLUGIN_SLUG } production zip...\n` );
 
-// 1. Run production build.
-console.log( '1. Running webpack build...' );
-execSync( 'npm run build', { cwd: ROOT, stdio: 'inherit' } );
+	// 1. Run production build.
+	console.log( '1. Running webpack build...' );
+	execSync( 'npm run build', { cwd: ROOT, stdio: 'inherit' } );
 
-// 2. Clean and create staging directory.
-console.log( '\n2. Preparing staging directory...' );
-cleanDir( PRODUCTION_DIR );
-fs.mkdirSync( STAGING_DIR, { recursive: true } );
+	// 2. Clean and create staging directory.
+	console.log( '\n2. Preparing staging directory...' );
+	if ( fs.existsSync( STAGING_BASE ) ) {
+		fs.rmSync( STAGING_BASE, { recursive: true, force: true } );
+	}
+	fs.mkdirSync( STAGING_DIR, { recursive: true } );
 
-// 3. Copy files.
-console.log( '3. Copying production files...' );
-let fileCount = 0;
+	// 3. Copy files.
+	console.log( '3. Copying production files...' );
+	let fileCount = 0;
 
-for ( const item of INCLUDE ) {
-	const srcPath = path.join( ROOT, item );
+	for ( const item of INCLUDE ) {
+		const srcPath = path.join( ROOT, item );
 
-	if ( ! fs.existsSync( srcPath ) ) {
-		console.log( `   Skipping (not found): ${ item }` );
-		continue;
+		if ( ! fs.existsSync( srcPath ) ) {
+			console.log( `   Skipping (not found): ${ item }` );
+			continue;
+		}
+
+		const destPath = path.join( STAGING_DIR, item );
+		copyRecursive( srcPath, destPath );
+
+		const stat = fs.statSync( srcPath );
+		if ( stat.isDirectory() ) {
+			const count = countFiles( destPath );
+			fileCount += count;
+			console.log( `   ${ item } (${ count } files)` );
+		} else {
+			fileCount++;
+			console.log( `   ${ item }` );
+		}
 	}
 
-	const destPath = path.join( STAGING_DIR, item );
-	copyRecursive( srcPath, destPath );
+	// 4. Create zip.
+	console.log( `\n4. Creating zip archive (${ fileCount } files)...` );
 
-	const stat = fs.statSync( srcPath );
-	if ( stat.isDirectory() ) {
-		const count = countFiles( destPath );
-		fileCount += count;
-		console.log( `   ${ item } (${ count } files)` );
-	} else {
-		fileCount++;
-		console.log( `   ${ item }` );
+	// Remove old zip if exists.
+	if ( fs.existsSync( ZIP_FILE ) ) {
+		fs.unlinkSync( ZIP_FILE );
 	}
+
+	// Create zip with plugin folder at root (smart-local-ai-pro/...).
+	await createZip( STAGING_DIR, ZIP_FILE, PLUGIN_SLUG );
+
+	// 5. Clean up staging directory.
+	fs.rmSync( STAGING_BASE, { recursive: true, force: true } );
+
+	// 6. Report.
+	const zipSize = fs.statSync( ZIP_FILE ).size;
+	const sizeMB = ( zipSize / 1024 / 1024 ).toFixed( 2 );
+
+	console.log( `\nDone! Production zip created:` );
+	console.log( `   production/${ PLUGIN_SLUG }.zip (${ sizeMB } MB)` );
+	console.log( `   ${ fileCount } files included\n` );
 }
 
-// 4. Create zip.
-console.log( `\n4. Creating zip archive (${ fileCount } files)...` );
-
-// Remove old zip if exists.
-if ( fs.existsSync( ZIP_FILE ) ) {
-	fs.unlinkSync( ZIP_FILE );
-}
-
-// Use PowerShell on Windows, zip on Unix.
-const isWindows = process.platform === 'win32';
-
-if ( isWindows ) {
-	execSync(
-		`powershell -Command "Compress-Archive -Path '${ STAGING_DIR }' -DestinationPath '${ ZIP_FILE }'"`,
-		{ cwd: PRODUCTION_DIR, stdio: 'inherit' }
-	);
-} else {
-	execSync(
-		`cd "${ PRODUCTION_DIR }" && zip -r ${ PLUGIN_SLUG }.zip ${ PLUGIN_SLUG }/`,
-		{ stdio: 'inherit' }
-	);
-}
-
-// 5. Clean up staging directory.
-fs.rmSync( STAGING_DIR, { recursive: true, force: true } );
-
-// 6. Report.
-const zipSize = fs.statSync( ZIP_FILE ).size;
-const sizeMB = ( zipSize / 1024 / 1024 ).toFixed( 2 );
-
-console.log( `\nDone! Production zip created:` );
-console.log( `   production/${ PLUGIN_SLUG }.zip (${ sizeMB } MB)` );
-console.log( `   ${ fileCount } files included\n` );
+main().catch( ( err ) => {
+	console.error( err );
+	process.exit( 1 );
+} );
